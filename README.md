@@ -1,12 +1,22 @@
-# Symfony GPT Console Assistant
+# ConsoleGpt - Symfony GPT Console Assistant
 
 This library allows seamless integration of a GPT-based chat interface with `symfony/console`, enabling users to execute one command or a sequence of commands and manipulate them interactively via chat.
+
+**Have you dreamed of speaking the same language with your application? 😀**
+
+![](docs/assets/demo.gif)
+
+*Try chatting with the demo app*
+
+```bash
+$ OPENAI_API_KEY='<your API key>' php demo/demo.php chat
+```
 
 ## Features
 
 - **Run Console Commands**: Execute a single Symfony console command or a sequence of commands through an interactive chat.
-- **Command Manipulation**: Modify and refine commands dynamically before execution.
-- **Extensibility**: Integrate into your existing Symfony console application or inherit functionality in custom applications.
+- **Processing the result**: Dynamically change and modify the return result of console commands. If you want to display it in the form of a table, please do so. Translating into any language is not a problem.
+- **Easy to use**: Integrate ConsoleGpt into your existing Symfony console application and start talking to it today!
 
 ## Installation
 
@@ -19,6 +29,8 @@ This library allows seamless integration of a GPT-based chat interface with `sym
 2. Ensure your project uses Symfony Console (`symfony/console`).
 
 3. Add the `Chat` command to your Symfony console application.
+
+4. Set the environment variable `OPENAI_API_KEY`.
 
 ## Usage
 
