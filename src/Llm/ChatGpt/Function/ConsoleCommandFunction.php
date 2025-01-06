@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 final class ConsoleCommandFunction extends BaseFunction
 {
-    private const MAX_OUTPUT_LEN_TO_PROCESS = 1500;
+    private const MAX_OUTPUT_LEN_TO_PROCESS = 3000;
     private const ARGUMENTS_TO_SKIP = [
         'command',
         '--quiet',
@@ -22,6 +22,7 @@ final class ConsoleCommandFunction extends BaseFunction
     public function __construct(
         private readonly SymfonyStyle $io,
         private readonly string $name,
+        private readonly string $commandName,
         private readonly string $description,
         private readonly array $arguments,
     ) {
@@ -65,8 +66,12 @@ final class ConsoleCommandFunction extends BaseFunction
                 false
             );
         }
+
+        $name = $command->getName();
+
         return new self(
             $io,
+            preg_replace('/[^a-zA-Z0-9_-]/', '_', $name),
             $command->getName(),
             $command->getDescription() . ($command->getSynopsis() ? '. Synopsis: ' . $command->getSynopsis() : ''),
             $arguments
@@ -76,6 +81,11 @@ final class ConsoleCommandFunction extends BaseFunction
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getCommandName(): string
+    {
+        return $this->commandName;
     }
 
     public function getDescription(): string
@@ -91,9 +101,10 @@ final class ConsoleCommandFunction extends BaseFunction
     public function run(array $values = []): string
     {
         $declaredArgs = $this->getArguments();
-        array_filter($values, static fn(string $k) => array_key_exists($k, $declaredArgs), ARRAY_FILTER_USE_KEY);
 
-        $arguments = array_filter($values, static fn(string $key) => !str_starts_with($key, '-'), ARRAY_FILTER_USE_KEY);
+        $arguments = array_filter($values, static fn(string $k) => array_key_exists($k, $declaredArgs), ARRAY_FILTER_USE_KEY);
+
+        $arguments = array_filter($arguments, static fn(string $key) => !str_starts_with($key, '-'), ARRAY_FILTER_USE_KEY);
         $arguments = array_map(static fn($v) => $v, $arguments);
 
         $options = array_filter($values, static fn(string $key) => str_starts_with($key, '-'), ARRAY_FILTER_USE_KEY);
@@ -112,7 +123,7 @@ final class ConsoleCommandFunction extends BaseFunction
             command: [
                 PHP_BINARY,
                 $_SERVER['PHP_SELF'],
-                $this->getName(),
+                $this->getCommandName(),
                 ...$arguments,
                 ...$options,
             ],

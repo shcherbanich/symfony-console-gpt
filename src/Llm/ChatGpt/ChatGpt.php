@@ -15,6 +15,8 @@ use ConsoleGpt\Llm\ChatGpt\Function\ShowUsageStatisticFunction;
 use Gioni06\Gpt3Tokenizer\Gpt3Tokenizer;
 use Gioni06\Gpt3Tokenizer\Gpt3TokenizerConfig;
 use JetBrains\PhpStorm\NoReturn;
+use JsonException;
+use OpenAI;
 use OpenAI\Client;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -42,8 +44,8 @@ final class ChatGpt implements Chat
 
     public static function create(SymfonyStyle $io, Application $app): ChatGpt
     {
-        $openaiKey = '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';//getenv('OPENAI_API_KEY');
-        $client = \OpenAI::factory()
+        $openaiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::factory()
             ->withApiKey($openaiKey)
             ->withHttpClient($client = new \GuzzleHttp\Client([]))
             ->withStreamHandler(fn(RequestInterface $request): ResponseInterface => $client->send($request, [
@@ -56,7 +58,7 @@ final class ChatGpt implements Chat
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     #[NoReturn] public function run(): void
     {
@@ -79,7 +81,7 @@ final class ChatGpt implements Chat
                 $stream = $this->client->chat()->createStreamed([
                     'model' => $this->getModel(),
                     'messages' => $this->getDialogHistoryForRequest(),
-                    'functions' => $functionsCollection->asArray()
+                    'functions' => $functionsCollection->asArray(),
                 ]);
                 $outputTokens = 0;
                 $lastModel = '';
@@ -132,7 +134,7 @@ final class ChatGpt implements Chat
     public function choiceModel(): void
     {
         $models = array_column($this->client->models()->list()->toArray()['data'] ?? [], 'id');
-        $models = array_filter($models, static fn($id) => str_starts_with($id, 'gpt-'));
+        $models = array_filter($models, static fn($id) => str_starts_with($id, 'gpt-') && preg_match('/^(?!.*\b(audio|realtime)\b)/', $id));
         rsort($models);
         $this->model = $this->io->choice('Please select a model from the list of available ones', $models, 'gpt-4');
     }

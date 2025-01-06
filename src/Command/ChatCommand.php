@@ -44,5 +44,7 @@ Hello! My name is ConsoleGpt, and I am your assistant for working with the conso
 Write what command or action you want to perform, and I will help you do it!
 GREETING);
         $llmChat->run();
+
+        return Command::SUCCESS;
     }
 }
